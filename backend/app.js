@@ -8,10 +8,10 @@ const app = express();
 
 const rawOrigins = process.env.CORS_ORIGIN || "http://localhost:3000";
 const allowedOrigins = rawOrigins.split(',').map(s => s.trim()).filter(Boolean);
-const vercelRegex = /\.vercel\.app$/;
+
 const originFn = (origin, callback) => {
   if (!origin) return callback(null, true);
-  if (allowedOrigins.includes(origin) || vercelRegex.test(origin)) return callback(null, true);
+  if (allowedOrigins.includes(origin)) return callback(null, true);
   return callback(new Error('Not allowed by CORS'));
 };
 
@@ -28,18 +28,18 @@ app.get('/', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Routes (mounted without /api prefix for Vercel functions under /api/[...path])
+
 const stockRoutes = require('./routes/stocks');
 const predictionRoutes = require('./routes/predictions');
 const newsRoutes = require('./routes/news');
 const authRoutes = require('./routes/auth');
 const portfolioRoutes = require('./routes/portfolio');
 
-app.use('/stocks', stockRoutes);
-app.use('/predictions', predictionRoutes);
-app.use('/news', newsRoutes);
-app.use('/auth', authRoutes);
-app.use('/portfolio', portfolioRoutes);
+app.use('/api/stocks', stockRoutes);
+app.use('/api/predictions', predictionRoutes);
+app.use('/api/news', newsRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/portfolio', portfolioRoutes);
 
 // MongoDB connection
 const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/stockprediction';

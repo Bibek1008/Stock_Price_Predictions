@@ -6,7 +6,7 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import axios from 'axios';
 
-axios.defaults.baseURL = process.env.REACT_APP_API_BASE_URL || window.location.origin;
+axios.defaults.baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

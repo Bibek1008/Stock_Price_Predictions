@@ -536,11 +536,10 @@ router.get('/:symbol', async (req, res) => {
             }
             const predictionResults = simplePredictPrices(indicators.dates, indicators.prices, targetDates);
             predictions = predictionResults.predictions;
-            modelAccuracy = predictionResults.r2;
-            modelType = 'LinearRegression';
+          modelAccuracy = predictionResults.r2;
+          modelType = 'LinearRegression';
           }
         }
-      }
     
       // Cache the result for future requests (only if not from cache)
       if (!cachedResult) {

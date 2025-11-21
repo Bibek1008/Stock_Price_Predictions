@@ -413,4 +413,4 @@ const StockComparison = () => {
 };
 
 export default StockComparison;
-const API_URL = process.env.REACT_APP_API_BASE_URL || window.location.origin;
+const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001';

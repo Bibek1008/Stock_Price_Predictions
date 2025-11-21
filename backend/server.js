@@ -11,10 +11,10 @@ const app = express();
 const server = http.createServer(app);
 const rawOrigins = process.env.CORS_ORIGIN || "http://localhost:3000";
 const allowedOrigins = rawOrigins.split(',').map(s => s.trim()).filter(Boolean);
-const vercelRegex = /\.vercel\.app$/;
+
 const originFn = (origin, callback) => {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin) || vercelRegex.test(origin)) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
     return callback(new Error('Not allowed by CORS'));
 };
 const io = socketIo(server, {
@@ -41,6 +41,10 @@ const predictionRoutes = require('./routes/predictions');
 const newsRoutes = require('./routes/news');
 const authRoutes = require('./routes/auth');
 const portfolioRoutes = require('./routes/portfolio');
+
+app.get('/api', (req, res) => {
+    res.json({ status: 'ok' });
+});
 
 app.use('/api/stocks', stockRoutes);
 app.use('/api/predictions', predictionRoutes);
