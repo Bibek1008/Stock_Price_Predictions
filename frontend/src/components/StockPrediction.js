@@ -44,14 +44,14 @@ const StockPrediction = () => {
     
     try {
       // Fetch prediction data
-      const predResponse = await axios.get(`http://localhost:5001/api/predictions/${sym}`, {
+      const predResponse = await axios.get(`${API_URL}/api/predictions/${sym}`, {
         params: { startDate }
       });
       
       setPredictionData(predResponse.data);
       
       // Fetch news data
-      const newsResponse = await axios.get(`http://localhost:5001/api/news/${sym}`, {
+      const newsResponse = await axios.get(`${API_URL}/api/news/${sym}`, {
         params: { days: 7 }
       });
       
@@ -327,3 +327,4 @@ const StockPrediction = () => {
 };
 
 export default StockPrediction;
+const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001';

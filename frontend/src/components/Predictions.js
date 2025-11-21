@@ -75,14 +75,14 @@ function Predictions() {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.get(`http://localhost:5001/api/predictions/${symbol}`, {
+      const response = await axios.get(`${API_URL}/api/predictions/${symbol}`, {
         params: { exchange }
       });
       const data = response.data;
       setPredictionData(data);
 
       // Fetch historical for chart context
-      const histRes = await axios.get(`http://localhost:5001/api/stocks/historical/${symbol}`, {
+      const histRes = await axios.get(`${API_URL}/api/stocks/historical/${symbol}`, {
         params: { exchange }
       });
       const histData = histRes.data || [];
@@ -108,7 +108,7 @@ function Predictions() {
       const trainSym = exchange === 'BSE'
         ? (trainingSymbol.includes('.BO') ? trainingSymbol : `${trainingSymbol}.BO`)
         : trainingSymbol;
-      const response = await axios.post(`http://localhost:5001/api/predictions/train/${trainSym}`);
+      const response = await axios.post(`${API_URL}/api/predictions/train/${trainSym}`);
       
       // Check if the response indicates success or failure
       if (response.data && response.data.success === false) {
@@ -516,3 +516,4 @@ function Predictions() {
 }
 
 export default Predictions;
+const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001';

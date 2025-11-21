@@ -37,6 +37,8 @@ import {
 } from '@mui/icons-material';
 import { Line } from 'react-chartjs-2';
 
+const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001';
+
 const Portfolio = ({ darkMode }) => {
   const [portfolio, setPortfolio] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -57,8 +59,8 @@ const Portfolio = ({ darkMode }) => {
     const token = localStorage.getItem('token');
     if (token) {
       Promise.all([
-        axios.get('http://localhost:5001/api/portfolio', { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get('http://localhost:5001/api/portfolio/history', { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${API_URL}/api/portfolio`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/api/portfolio/history`, { headers: { Authorization: `Bearer ${token}` } })
       ]).then(([p, h]) => {
         setPortfolio(p.data.portfolio || []);
         setHistory(h.data.history || []);
@@ -92,7 +94,7 @@ const Portfolio = ({ darkMode }) => {
       const fetches = portfolio.map(async (stock) => {
         try {
           const exchange = stock.symbol.includes('.BO') ? 'BSE' : 'NSE';
-          const res = await axios.get(`http://localhost:5001/api/stocks/${stock.symbol}`, {
+          const res = await axios.get(`${API_URL}/api/stocks/${stock.symbol}`, {
             params: { exchange }
           });
           const price = Number(res.data?.regularMarketPrice) || Number(res.data?.regularMarketPreviousClose) || stock.buyPrice;
@@ -159,9 +161,9 @@ const Portfolio = ({ darkMode }) => {
           buyDate: stockData.buyDate,
           currentPrice: stockData.currentPrice,
         };
-        const res = await axios.post('http://localhost:5001/api/portfolio', payload, { headers: { Authorization: `Bearer ${token}` } });
+        const res = await axios.post(`${API_URL}/api/portfolio`, payload, { headers: { Authorization: `Bearer ${token}` } });
         setPortfolio(res.data.portfolio || []);
-        const h = await axios.get('http://localhost:5001/api/portfolio/history', { headers: { Authorization: `Bearer ${token}` } });
+        const h = await axios.get(`${API_URL}/api/portfolio/history`, { headers: { Authorization: `Bearer ${token}` } });
         setHistory(h.data.history || []);
       } catch (e) {
         setPortfolio(prev => editingStock ? prev.map(s => (s.id === editingStock.id ? stockData : s)) : [...prev, stockData]);
@@ -178,9 +180,9 @@ const Portfolio = ({ darkMode }) => {
     const token = localStorage.getItem('token');
     if (token && mongoId) {
       try {
-        const res = await axios.delete(`http://localhost:5001/api/portfolio/${mongoId}`, { headers: { Authorization: `Bearer ${token}` } });
+        const res = await axios.delete(`${API_URL}/api/portfolio/${mongoId}`, { headers: { Authorization: `Bearer ${token}` } });
         setPortfolio(res.data.portfolio || []);
-        const h = await axios.get('http://localhost:5001/api/portfolio/history', { headers: { Authorization: `Bearer ${token}` } });
+        const h = await axios.get(`${API_URL}/api/portfolio/history`, { headers: { Authorization: `Bearer ${token}` } });
         setHistory(h.data.history || []);
         return;
       } catch (e) {}

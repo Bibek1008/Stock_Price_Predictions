@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Box, Card, CardContent, Typography, TextField, Button, Grid, Alert } from '@mui/material';
 import axios from 'axios';
+const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001';
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const Auth = () => {
     setError('');
     setSuccess('');
     try {
-      const res = await axios.post('http://localhost:5001/api/auth/login', loginForm);
+      const res = await axios.post(`${API_URL}/api/auth/login`, loginForm);
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
       axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
@@ -33,7 +34,7 @@ const Auth = () => {
     setError('');
     setSuccess('');
     try {
-      const res = await axios.post('http://localhost:5001/api/auth/signup', signupForm);
+      const res = await axios.post(`${API_URL}/api/auth/signup`, signupForm);
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
       axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;

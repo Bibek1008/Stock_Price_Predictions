@@ -46,6 +46,7 @@ import {
 import { styled, keyframes } from '@mui/material/styles';
 import { Line } from 'react-chartjs-2';
 import axios from 'axios';
+const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001';
 
 // Styled components for enhanced UI
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -146,7 +147,7 @@ function Dashboard() {
     setError(null);
     
     try {
-      const response = await axios.get(`http://localhost:5001/api/stocks/${symbol}`);
+      const response = await axios.get(`${API_URL}/api/stocks/${symbol}`);
       setStockData(response.data);
     } catch (error) {
       console.error('Error fetching stock data:', error);
@@ -172,7 +173,7 @@ function Dashboard() {
   const fetchTopStocks = async () => {
     setTopStocksLoading(true);
     try {
-      const response = await axios.get('http://localhost:5001/api/stocks');
+      const response = await axios.get(`${API_URL}/api/stocks`);
       const stocksData = response.data;
       
       // Transform the real data to match our display format
@@ -206,7 +207,7 @@ function Dashboard() {
   // WebSocket connection for real-time updates
   useEffect(() => {
     if (realTimeUpdates) {
-      const newSocket = io('http://localhost:5001');
+      const newSocket = io(API_URL);
       setSocket(newSocket);
 
       // Listen for stock updates

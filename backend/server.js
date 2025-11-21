@@ -9,10 +9,17 @@ require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
-const allowedOrigin = process.env.CORS_ORIGIN || "http://localhost:3000";
+const rawOrigins = process.env.CORS_ORIGIN || "http://localhost:3000";
+const allowedOrigins = rawOrigins.split(',').map(s => s.trim()).filter(Boolean);
+const vercelRegex = /\.vercel\.app$/;
+const originFn = (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || vercelRegex.test(origin)) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'));
+};
 const io = socketIo(server, {
     cors: {
-        origin: allowedOrigin,
+        origin: originFn,
         methods: ["GET", "POST"]
     }
 });
@@ -22,7 +29,7 @@ const port = process.env.PORT || 5001;
 // Middleware
 app.use(helmet());
 app.use(cors({
-    origin: allowedOrigin,
+    origin: originFn,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
 }));

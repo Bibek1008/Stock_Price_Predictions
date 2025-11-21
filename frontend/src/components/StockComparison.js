@@ -74,7 +74,7 @@ const StockComparison = () => {
     try {
       const promises = selectedStocks.map(async (stock) => {
         try {
-          const response = await axios.get(`http://localhost:5001/api/stocks/historical/${stock}`);
+          const response = await axios.get(`${API_URL}/api/stocks/historical/${stock}`);
           const historicalData = response.data || [];
 
           const transformedData = historicalData.map((item) => ({
@@ -413,3 +413,4 @@ const StockComparison = () => {
 };
 
 export default StockComparison;
+const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001';

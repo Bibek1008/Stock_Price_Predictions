@@ -24,6 +24,8 @@ import {
   Legend,
 } from 'chart.js';
 
+const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001';
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -49,12 +51,12 @@ function StockDetail() {
         console.log(`Fetching data for ${symbol}`);
         
         // Historical data
-        const historicalRes = await axios.get(`http://localhost:5001/api/stocks/historical/${symbol}`);
+        const historicalRes = await axios.get(`${API_URL}/api/stocks/historical/${symbol}`);
         console.log('Historical data:', historicalRes.data);
         setHistoricalData(historicalRes.data);
         
         // Prediction data
-        const predictionsRes = await axios.get(`http://localhost:5001/api/predictions/${symbol}`);
+        const predictionsRes = await axios.get(`${API_URL}/api/predictions/${symbol}`);
         console.log('Prediction data:', predictionsRes.data);
         setPredictionData(predictionsRes.data);
         

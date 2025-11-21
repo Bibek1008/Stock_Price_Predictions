@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import { OpenInNew as OpenInNewIcon, Search as SearchIcon } from '@mui/icons-material';
 import axios from 'axios';
+const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001';
 
 function News() {
   const [news, setNews] = useState([]);
@@ -35,7 +36,7 @@ function News() {
     setError('');
     try {
       console.log('Fetching general market news');
-      const response = await axios.get('http://localhost:5001/api/news');
+      const response = await axios.get(`${API_URL}/api/news`);
       console.log('News data:', response.data);
       setNews(response.data);
       setCurrentSymbol('');
@@ -57,7 +58,7 @@ function News() {
     setError('');
     try {
       console.log(`Fetching news for ${searchSymbol}`);
-      const response = await axios.get(`http://localhost:5001/api/news/${searchSymbol}`);
+      const response = await axios.get(`${API_URL}/api/news/${searchSymbol}`);
       console.log('News data:', response.data);
       setNews(response.data);
       setCurrentSymbol(searchSymbol);

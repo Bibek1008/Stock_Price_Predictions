@@ -83,7 +83,7 @@ const SentimentAnalysis = ({ darkMode }) => {
     setLoading(true);
     
     try {
-      const response = await axios.get(`http://localhost:5001/api/news/${selectedStock}`, { params: { exchange } });
+      const response = await axios.get(`${API_URL}/api/news/${selectedStock}`, { params: { exchange } });
       const newsArray = Array.isArray(response.data) ? response.data : [];
 
       const transformedNews = newsArray.map((article, index) => {
@@ -542,3 +542,4 @@ const SentimentAnalysis = ({ darkMode }) => {
 };
 
 export default SentimentAnalysis;
+const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001';
