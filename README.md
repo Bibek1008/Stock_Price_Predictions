@@ -20,7 +20,7 @@ A full-stack application for Indian stock market tracking, portfolio management,
 - Real data collection: historical and real-time quotes from Yahoo Finance; company and market news from NewsAPI.
 - Preprocessing: cleaning, normalization/min–max scaling, time-series windowing (sequence creation), and feature selection for indicators.
 - Sentiment scoring: tokenization, stemming, and finance-specific term/phrase weighting for robust article sentiment.
-- LSTM modeling: sequence models implemented in Node (TensorFlow.js) and optional trained Python pipelines; trained with sliding windows and validated with MSE/R².
+- LSTM modeling: sequence models implemented in Node (TensorFlow.js) and our trained Python pipelines; trained with sliding windows and validated with MSE/R².
 - Inference: multi-day horizon forecasting with confidence intervals; results exposed via REST endpoints.
 
 ## Quick Start
@@ -60,10 +60,7 @@ JWT_EXPIRES_IN=7d
 # NewsAPI for real articles and sentiment
 NEWS_API_KEY=your_real_newsapi_key
 
-# Optional: HuggingFace external sequence model backup
-SEQ_MODEL_API_TOKEN=your_hf_token
-SEQ_MODEL_ID=kashif/timeseries-transformer
-# or use EXTERNAL_MODEL_API_TOKEN / EXTERNAL_MODEL_ID / HF_API_TOKEN / HF_MODEL_ID
+# Models: We train our own LSTM models; no external providers
 ```
 Notes:
 - Do not commit `.env`. Ensure it’s in `.gitignore`.
