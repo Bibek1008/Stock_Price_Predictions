@@ -14,6 +14,7 @@ const tf = require('@tensorflow/tfjs');
 
 // Initialize LSTM predictor
 const lstmPredictor = new LSTMPredictor();
+const IS_SERVERLESS = !!process.env.VERCEL;
 
 // Cache for trained models to prevent repeated training
 const modelCache = new Map();
@@ -448,70 +449,64 @@ router.get('/:symbol', async (req, res) => {
       modelType = cachedResult.modelType;
     } else {
       try {
-        // Try LSTM prediction first
-        console.log(`Training LSTM model for ${symbol}...`);
-        const lookback = 20; // Use 20 days of historical data to predict the next day
-        const trainedModel = await trainLSTMModel(closingPrices, lookback);
-        
-        // Predict future prices
-        console.log(`Predicting future prices for ${symbol} using LSTM...`);
-        predictions = await predictFuturePrices(
-          trainedModel.model,
-          trainedModel.lastSequence,
-          trainedModel.min,
-          trainedModel.max,
-          7 // Predict 7 days ahead
-        );
-        
-        // Calculate approximate confidence intervals based on MSE
-        const mse = trainedModel.mse;
-        const stdDev = Math.sqrt(mse * (trainedModel.max - trainedModel.min) ** 2);
-        
-        // Adjust confidence intervals
-        predictions.forEach((pred, i) => {
-          // Wider confidence interval as we predict further into the future
-          const dayFactor = 1 + (i * 0.05);
-          pred.confidenceInterval.lower = pred.predictedPrice - (1.96 * stdDev * dayFactor);
-          pred.confidenceInterval.upper = pred.predictedPrice + (1.96 * stdDev * dayFactor);
-        });
-        
-        modelAccuracy = trainedModel.r2;
-        modelType = 'LSTM';
+        if (!IS_SERVERLESS) {
+          console.log(`Training LSTM model for ${symbol}...`);
+          const lookback = 20;
+          const trainedModel = await trainLSTMModel(closingPrices, lookback);
+          console.log(`Predicting future prices for ${symbol} using LSTM...`);
+          predictions = await predictFuturePrices(
+            trainedModel.model,
+            trainedModel.lastSequence,
+            trainedModel.min,
+            trainedModel.max,
+            7
+          );
+          const mse = trainedModel.mse;
+          const stdDev = Math.sqrt(mse * (trainedModel.max - trainedModel.min) ** 2);
+          predictions.forEach((pred, i) => {
+            const dayFactor = 1 + (i * 0.05);
+            pred.confidenceInterval.lower = pred.predictedPrice - (1.96 * stdDev * dayFactor);
+            pred.confidenceInterval.upper = pred.predictedPrice + (1.96 * stdDev * dayFactor);
+          });
+          modelAccuracy = trainedModel.r2;
+          modelType = 'LSTM';
+        } else {
+          throw new Error('Serverless: skip LSTM training');
+        }
       } catch (error) {
         console.error('LSTM prediction failed, attempting trained LSTM model as backup:', error);
-
-        // Try trained LSTM model as primary fallback
-        try {
-          console.log(`Checking for trained LSTM model for ${symbol}...`);
-          const hasTrainedModel = await lstmPredictor.hasModel(symbol);
-          
-          if (hasTrainedModel) {
-            console.log(`Using trained LSTM model for ${symbol}...`);
-            const lstmResult = await lstmPredictor.predict(symbol, 7);
+        // Skip Python-based trained model on serverless
+        if (!IS_SERVERLESS) {
+          try {
+            console.log(`Checking for trained LSTM model for ${symbol}...`);
+            const hasTrainedModel = await lstmPredictor.hasModel(symbol);
             
-            if (lstmResult.success) {
-              // Convert LSTM predictions to expected format
-              predictions = lstmResult.predictions.map(pred => ({
-                date: new Date(pred.date),
-                predictedPrice: pred.price,
-                confidenceInterval: {
-                  lower: pred.price * 0.95, // 5% confidence interval
-                  upper: pred.price * 1.05
-                }
-              }));
+            if (hasTrainedModel) {
+              console.log(`Using trained LSTM model for ${symbol}...`);
+              const lstmResult = await lstmPredictor.predict(symbol, 7);
               
-              // Calculate model accuracy based on recent performance
-              modelAccuracy = 0.85; // Default accuracy for trained models
-              modelType = 'TrainedLSTM';
-              console.log(`Successfully used trained LSTM model for ${symbol}`);
+              if (lstmResult.success) {
+                predictions = lstmResult.predictions.map(pred => ({
+                  date: new Date(pred.date),
+                  predictedPrice: pred.price,
+                  confidenceInterval: {
+                    lower: pred.price * 0.95,
+                    upper: pred.price * 1.05
+                  }
+                }));
+                modelAccuracy = 0.85;
+                modelType = 'TrainedLSTM';
+                console.log(`Successfully used trained LSTM model for ${symbol}`);
+              } else {
+                throw new Error(lstmResult.error);
+              }
             } else {
-              throw new Error(lstmResult.error);
+              throw new Error(`No trained model available for ${symbol}`);
             }
-          } else {
-            throw new Error(`No trained model available for ${symbol}`);
+          } catch (lstmError) {
+            console.error('Trained LSTM model failed, attempting external model as backup:', lstmError);
           }
-        } catch (lstmError) {
-          console.error('Trained LSTM model failed, attempting external model as backup:', lstmError);
+        }
 
           // Try external cloud sequence model backup if configured
           try {
@@ -618,6 +613,9 @@ router.get('/:symbol', async (req, res) => {
 // Route to train a new LSTM model for a specific symbol
 router.post('/train/:symbol', async (req, res) => {
   try {
+    if (IS_SERVERLESS) {
+      return res.status(501).json({ success: false, error: 'Training is not supported on serverless deployment' });
+    }
     const { symbol } = req.params;
     const { period = '5y', epochs = 50, sequenceLength = 60, testSize = 0.2 } = req.body;
     
@@ -718,6 +716,9 @@ router.post('/train/:symbol', async (req, res) => {
 // Route to get available trained models
 router.get('/models', async (req, res) => {
   try {
+    if (IS_SERVERLESS) {
+      return res.json({ success: true, models: [], count: 0 });
+    }
     const models = await lstmPredictor.getAvailableModels();
     res.json({
       success: true,
@@ -736,6 +737,9 @@ router.get('/models', async (req, res) => {
 // Route to get model metadata for a specific symbol
 router.get('/models/:symbol', async (req, res) => {
   try {
+    if (IS_SERVERLESS) {
+      return res.status(404).json({ success: false, error: 'No trained model found' });
+    }
     const { symbol } = req.params;
     const formattedSymbol = formatStockSymbol(symbol);
     
@@ -766,6 +770,9 @@ router.get('/models/:symbol', async (req, res) => {
 // Route to delete a trained model
 router.delete('/models/:symbol', async (req, res) => {
   try {
+    if (IS_SERVERLESS) {
+      return res.status(404).json({ success: false, error: 'Model deletion not supported on serverless' });
+    }
     const { symbol } = req.params;
     const formattedSymbol = formatStockSymbol(symbol);
     
@@ -795,6 +802,9 @@ router.delete('/models/:symbol', async (req, res) => {
 // Route to predict using trained LSTM model directly
 router.get('/lstm/:symbol', async (req, res) => {
   try {
+    if (IS_SERVERLESS) {
+      return res.status(404).json({ success: false, error: 'Trained LSTM not available on serverless' });
+    }
     const { symbol } = req.params;
     const { days = 7 } = req.query;
     

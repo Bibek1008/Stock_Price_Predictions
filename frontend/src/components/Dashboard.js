@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import io from 'socket.io-client';
 import {
   Container,
   Grid,
@@ -135,7 +134,6 @@ function Dashboard() {
   const [topStocks, setTopStocks] = useState([]);
   const [topStocksLoading, setTopStocksLoading] = useState(true);
   const [favorites, setFavorites] = useState(['RELIANCE', 'TCS']);
-  const [socket, setSocket] = useState(null);
   const [realTimeUpdates, setRealTimeUpdates] = useState(true);
   const navigate = useNavigate();
   const theme = useTheme();
@@ -204,49 +202,16 @@ function Dashboard() {
     fetchTopStocks();
   }, []);
 
-  // WebSocket connection for real-time updates
+  // Polling for near real-time updates (Vercel-friendly)
   useEffect(() => {
+    let timer;
     if (realTimeUpdates) {
-      const newSocket = io(API_URL);
-      setSocket(newSocket);
-
-      // Listen for stock updates
-      newSocket.on('stockUpdate', (stockData) => {
-        console.log('Received real-time stock update:', stockData);
-        
-        // Transform the real-time data to match our display format
-        const transformedStocks = stockData.map(stock => ({
-          symbol: stock.symbol.replace('.NS', '').replace('.BO', ''), // Remove exchange suffix for display
-          fullSymbol: stock.fullSymbol || stock.symbol, // Keep full symbol for API calls
-          price: stock.price || 0,
-          change: stock.changePercent || 0,
-          changeValue: stock.change || 0,
-          volume: formatVolume(stock.volume || 0),
-          marketCap: stock.marketCap || 0,
-          shortName: stock.name || stock.symbol,
-          currency: stock.currency || 'INR'
-        }));
-        
-        setTopStocks(transformedStocks);
-        setTopStocksLoading(false);
-      });
-
-      // Handle connection events
-      newSocket.on('connect', () => {
-        console.log('Connected to WebSocket server');
-      });
-
-      newSocket.on('disconnect', () => {
-        console.log('Disconnected from WebSocket server');
-      });
-
-      // Request to watch specific stocks
-      newSocket.emit('watchStocks', ['RELIANCE', 'TCS', 'INFY', 'HDFCBANK', 'ICICIBANK', 'ITC', 'SBIN', 'HINDUNILVR']);
-
-      return () => {
-        newSocket.close();
-      };
+      fetchTopStocks();
+      timer = setInterval(fetchTopStocks, 30000);
     }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
   }, [realTimeUpdates]);
 
   // Toggle real-time updates
