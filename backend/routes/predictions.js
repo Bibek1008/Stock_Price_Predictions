@@ -10,7 +10,11 @@ const { SMA, RSI, MACD } = require('technicalindicators');
 const Prediction = require('../models/Prediction');
 const axios = require('axios');
 const LSTMPredictor = require('../utils/lstm_predictor');
-const tf = require('@tensorflow/tfjs');
+let tf;
+const getTf = () => {
+  if (!tf) tf = require('@tensorflow/tfjs');
+  return tf;
+};
 
 // Initialize LSTM predictor
 const lstmPredictor = new LSTMPredictor();
@@ -184,6 +188,7 @@ const prepareTimeSeriesData = (data, lookback) => {
 const trainLSTMModel = async (data, lookback = 10) => {
   let xTensor, yTensor, model;
   try {
+    const tf = getTf();
     console.log(`Starting LSTM model training with ${data.length} data points and lookback ${lookback}`);
     
     // Validate input data
@@ -272,6 +277,7 @@ const trainLSTMModel = async (data, lookback = 10) => {
 // Function to predict future prices
 const predictFuturePrices = async (model, lastSequence, min, max, days = 7) => {
   try {
+    const tf = getTf();
     console.log(`Predicting future prices for ${days} days`);
     console.log(`Using last sequence of length ${lastSequence.length}`);
     

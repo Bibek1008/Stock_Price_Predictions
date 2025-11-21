@@ -23,6 +23,11 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Health check
+app.get('/', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
 // Routes (mounted without /api prefix for Vercel functions under /api/[...path])
 const stockRoutes = require('./routes/stocks');
 const predictionRoutes = require('./routes/predictions');
