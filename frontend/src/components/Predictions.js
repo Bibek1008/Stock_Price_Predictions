@@ -150,7 +150,7 @@ function Predictions() {
       <Grid container spacing={3}>
         {tabValue === 0 && (
           <Grid item xs={12}>
-            <Paper sx={{ p: 2, display: 'flex', gap: 2 }}>
+            <Paper sx={{ p: 2, display: 'flex', gap: 2, flexDirection: { xs: 'column', md: 'row' }, alignItems: { xs: 'stretch', md: 'center' } }}>
               <TextField
                 fullWidth
                 label="Enter Stock Symbol"
@@ -163,7 +163,7 @@ function Predictions() {
                 label="Exchange"
                 value={exchange}
                 onChange={(e) => setExchange(e.target.value)}
-                sx={{ minWidth: 140 }}
+                sx={{ minWidth: { xs: '100%', md: 140 } }}
               >
                 <MenuItem value="NSE">NSE</MenuItem>
                 <MenuItem value="BSE">BSE</MenuItem>
@@ -173,6 +173,7 @@ function Predictions() {
                 startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <SearchIcon />}
                 onClick={handlePredict}
                 disabled={loading || !symbol}
+                fullWidth={true}
               >
                 Predict
               </Button>
@@ -505,8 +506,11 @@ function Predictions() {
 
         {loading && (
           <Grid item xs={12}>
-            <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', my: 4, gap: 2 }}>
               <CircularProgress />
+              <Alert severity="info" sx={{ maxWidth: 520 }}>
+                Generating predictions. This can take up to 10–20 seconds on free instances.
+              </Alert>
             </Box>
           </Grid>
         )}

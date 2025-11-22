@@ -47,30 +47,30 @@ const Auth = () => {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h5" gutterBottom>
+    <Box sx={{ p: { xs: 2, sm: 3 }, minHeight: 'calc(100vh - 64px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Grid container spacing={3} justifyContent="center" alignItems="center">
+        <Grid item xs={12} sm={10} md={6} lg={4}>
+          <Card sx={{ maxWidth: 440, mx: 'auto' }}>
+            <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+              <Typography variant="h5" gutterBottom align="center">
                 {mode === 'login' ? 'Sign In' : 'Sign Up'}
               </Typography>
               {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
               {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
               {mode === 'login' ? (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <TextField label="Email or Username" value={loginForm.identifier} onChange={(e) => setLoginForm({ ...loginForm, identifier: e.target.value })} />
-                  <TextField label="Password" type="password" value={loginForm.password} onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })} />
-                  <Button variant="contained" onClick={handleLogin}>Sign In</Button>
-                  <Button variant="text" onClick={() => setMode('signup')}>Create an account</Button>
+                  <TextField fullWidth label="Email or Username" value={loginForm.identifier} onChange={(e) => setLoginForm({ ...loginForm, identifier: e.target.value })} />
+                  <TextField fullWidth label="Password" type="password" value={loginForm.password} onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })} />
+                  <Button fullWidth variant="contained" size="large" onClick={handleLogin}>Sign In</Button>
+                  <Button fullWidth variant="text" onClick={() => setMode('signup')}>Create an account</Button>
                 </Box>
               ) : (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <TextField label="Username" value={signupForm.username} onChange={(e) => setSignupForm({ ...signupForm, username: e.target.value })} />
-                  <TextField label="Email" value={signupForm.email} onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })} />
-                  <TextField label="Password" type="password" value={signupForm.password} onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })} />
-                  <Button variant="contained" onClick={handleSignup}>Sign Up</Button>
-                  <Button variant="text" onClick={() => setMode('login')}>Already have an account?</Button>
+                  <TextField fullWidth label="Username" value={signupForm.username} onChange={(e) => setSignupForm({ ...signupForm, username: e.target.value })} />
+                  <TextField fullWidth label="Email" value={signupForm.email} onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })} />
+                  <TextField fullWidth label="Password" type="password" value={signupForm.password} onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })} />
+                  <Button fullWidth variant="contained" size="large" onClick={handleSignup}>Sign Up</Button>
+                  <Button fullWidth variant="text" onClick={() => setMode('login')}>Already have an account?</Button>
                 </Box>
               )}
             </CardContent>
